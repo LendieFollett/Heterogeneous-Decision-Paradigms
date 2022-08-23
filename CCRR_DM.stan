@@ -29,6 +29,7 @@ data {
 
 parameters {
   vector<lower = 0>[5] RRbeta;
+  real<lower = 0>  RRmu;
   vector<lower = 0>[5] CCbeta;
   real<upper = 0> RRbeta_price;
   real<lower = 0> CCbeta_price;
@@ -64,18 +65,18 @@ transformed parameters {
                         CCbeta_price*((max_price[idx]-X[idx,6] )^phi_price); 
                   
   RRlinpred[idx]  =  action[idx]*RRdelta +
-            log(1 + exp(trX[idx,1]*RRbeta[1])) + 
-            log(1 + exp(trX[idx,2]*RRbeta[1]))+                   
-            log(1 + exp(gfX[idx,1]*RRbeta[2])) + 
-            log(1 + exp(gfX[idx,2]*RRbeta[2]))+ 
-            log(1 + exp(bdX[idx,1]*RRbeta[3])) + 
-            log(1 + exp(bdX[idx,2]*RRbeta[3]))+ 
-            log(1 + exp(plX[idx,1]*RRbeta[4])) + 
-            log(1 + exp(plX[idx,2]*RRbeta[4]))+ 
-            log(1 + exp(wqX[idx,1]*RRbeta[5])) + 
-            log(1 + exp(wqX[idx,2]*RRbeta[5]))+
-            log(1 + exp(priceX[idx,1]*RRbeta_price)) + 
-            log(1 + exp(priceX[idx,2]*RRbeta_price)) ;
+            RRmu*log(1 + exp(trX[idx,1]*RRbeta[1]/RRmu)) + 
+            RRmu*log(1 + exp(trX[idx,2]*RRbeta[1]/RRmu))+                   
+            RRmu*log(1 + exp(gfX[idx,1]*RRbeta[2]/RRmu)) + 
+            RRmu*log(1 + exp(gfX[idx,2]*RRbeta[2]/RRmu))+ 
+            RRmu*log(1 + exp(bdX[idx,1]*RRbeta[3]/RRmu)) + 
+            RRmu*log(1 + exp(bdX[idx,2]*RRbeta[3]/RRmu))+ 
+            RRmu*log(1 + exp(plX[idx,1]*RRbeta[4]/RRmu)) + 
+            RRmu*log(1 + exp(plX[idx,2]*RRbeta[4]/RRmu))+ 
+            RRmu*log(1 + exp(wqX[idx,1]*RRbeta[5]/RRmu)) + 
+            RRmu*log(1 + exp(wqX[idx,2]*RRbeta[5]/RRmu))+
+            RRmu*log(1 + exp(priceX[idx,1]*RRbeta_price/RRmu)) + 
+            RRmu*log(1 + exp(priceX[idx,2]*RRbeta_price/RRmu)) ;
   }                      
   
   for (i in 1:I){
@@ -98,10 +99,12 @@ model {
     RRbeta ~  normal(0, 1);
     CCbeta_price ~ normal(0, 1);
     RRbeta_price ~ normal(0, 1);
+    RRmu ~ normal(0,1);
     //gamma ~ normal(0,1);
     //alpha ~ normal(0,sigma_alpha);
     //sigma_alpha ~ normal(0, .5);
     gamma ~ normal(0, 0.5);
+    
     
     phi_tr ~ normal(phi_prior_mean, phi_prior_sd);
     phi_gf ~ normal(phi_prior_mean, phi_prior_sd);

@@ -20,7 +20,8 @@ data {
 }
 
 parameters {
-  vector[5] RRbeta;
+  vector<lower = 0>[5] RRbeta;
+  real<lower = 0>  RRmu;
   real<upper = 0> RRbeta_price;
   real delta;
 }
@@ -31,18 +32,18 @@ transformed parameters {
   vector[T] log_lik;
   for(idx in 1:N){
   linpred[idx]  =  action[idx]*delta +
-            log(1 + exp(trX[idx,1]*RRbeta[1])) + 
-            log(1 + exp(trX[idx,2]*RRbeta[1]))+                            
-            log(1 + exp(gfX[idx,1]*RRbeta[2])) + 
-            log(1 + exp(gfX[idx,2]*RRbeta[2]))+ 
-            log(1 + exp(bdX[idx,1]*RRbeta[3])) +
-            log(1 + exp(bdX[idx,2]*RRbeta[3]))+ 
-            log(1 + exp(plX[idx,1]*RRbeta[4])) + 
-            log(1 + exp(plX[idx,2]*RRbeta[4]))+ 
-            log(1 + exp(wqX[idx,1]*RRbeta[5])) + 
-            log(1 + exp(wqX[idx,2]*RRbeta[5]))+
-            log(1 + exp(priceX[idx,1]*RRbeta_price)) + 
-            log(1 + exp(priceX[idx,2]*RRbeta_price)) ;
+            RRmu*log(1 + exp(trX[idx,1]*RRbeta[1]/RRmu)) + 
+            RRmu*log(1 + exp(trX[idx,2]*RRbeta[1]/RRmu))+                   
+            RRmu*log(1 + exp(gfX[idx,1]*RRbeta[2]/RRmu)) + 
+            RRmu*log(1 + exp(gfX[idx,2]*RRbeta[2]/RRmu))+ 
+            RRmu*log(1 + exp(bdX[idx,1]*RRbeta[3]/RRmu)) + 
+            RRmu*log(1 + exp(bdX[idx,2]*RRbeta[3]/RRmu))+ 
+            RRmu*log(1 + exp(plX[idx,1]*RRbeta[4]/RRmu)) + 
+            RRmu*log(1 + exp(plX[idx,2]*RRbeta[4]/RRmu))+ 
+            RRmu*log(1 + exp(wqX[idx,1]*RRbeta[5]/RRmu)) + 
+            RRmu*log(1 + exp(wqX[idx,2]*RRbeta[5]/RRmu))+
+            RRmu*log(1 + exp(priceX[idx,1]*RRbeta_price/RRmu)) + 
+            RRmu*log(1 + exp(priceX[idx,2]*RRbeta_price/RRmu));
   }
     for (i in 1:T){
     log_prob[start[i]:end[i]] = log_softmax(-linpred[start[i]:end[i]]);
@@ -55,7 +56,7 @@ model {
     delta ~ normal(0, 1);
     RRbeta ~  normal(0, 1);
     RRbeta_price ~  normal(0, 1);
-
+    RRmu ~ normal(0,1);
   for(i in 1:T) {
     target +=log_lik[i];
   }

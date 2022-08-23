@@ -30,6 +30,7 @@ data {
 
 parameters {
   vector<lower = 0>[5]  RRbeta;
+  real<lower = 0>  RRmu;
   vector<lower = 0>[5]  RUMbeta;
   real<upper = 0> RRbeta_price;
   real<upper = 0> RUMbeta_price;
@@ -59,18 +60,18 @@ transformed parameters {
                         (X[idx,6])*RUMbeta_price; 
         // print(phi_price);                    
   RRlinpred[idx]  =  action[idx]*RRdelta +
-            log(1 + exp(trX[idx,1]*RRbeta[1])) + 
-            log(1 + exp(trX[idx,2]*RRbeta[1]))+                   
-            log(1 + exp(gfX[idx,1]*RRbeta[2])) + 
-            log(1 + exp(gfX[idx,2]*RRbeta[2]))+ 
-            log(1 + exp(bdX[idx,1]*RRbeta[3])) + 
-            log(1 + exp(bdX[idx,2]*RRbeta[3]))+ 
-            log(1 + exp(plX[idx,1]*RRbeta[4])) + 
-            log(1 + exp(plX[idx,2]*RRbeta[4]))+ 
-            log(1 + exp(wqX[idx,1]*RRbeta[5])) + 
-            log(1 + exp(wqX[idx,2]*RRbeta[5]))+
-            log(1 + exp(priceX[idx,1]*RRbeta_price)) + 
-            log(1 + exp(priceX[idx,2]*RRbeta_price)) ;
+            RRmu*log(1 + exp(trX[idx,1]*RRbeta[1]/RRmu)) + 
+            RRmu*log(1 + exp(trX[idx,2]*RRbeta[1]/RRmu))+                   
+            RRmu*log(1 + exp(gfX[idx,1]*RRbeta[2]/RRmu)) + 
+            RRmu*log(1 + exp(gfX[idx,2]*RRbeta[2]/RRmu))+ 
+            RRmu*log(1 + exp(bdX[idx,1]*RRbeta[3]/RRmu)) + 
+            RRmu*log(1 + exp(bdX[idx,2]*RRbeta[3]/RRmu))+ 
+            RRmu*log(1 + exp(plX[idx,1]*RRbeta[4]/RRmu)) + 
+            RRmu*log(1 + exp(plX[idx,2]*RRbeta[4]/RRmu))+ 
+            RRmu*log(1 + exp(wqX[idx,1]*RRbeta[5]/RRmu)) + 
+            RRmu*log(1 + exp(wqX[idx,2]*RRbeta[5]/RRmu))+
+            RRmu*log(1 + exp(priceX[idx,1]*RRbeta_price/RRmu)) + 
+            RRmu*log(1 + exp(priceX[idx,2]*RRbeta_price/RRmu)) ;
   }                      
   
   for (i in 1:I){
@@ -94,10 +95,11 @@ model {
     RRbeta ~   normal(0,1);
     RUMbeta_price ~ normal(0, 1);
     RRbeta_price ~ normal(0, 1);
+        RRmu ~ normal(0,1);
     //mu_alpha ~ normal(0,1);
     //alpha ~ normal(0,sigma_alpha);
    // sigma_alpha ~ normal(0, .5);
-    gamma ~ normal(0, 0.5);
+    gamma ~ normal(0, 0.25);
   // log probabilities of each choice in the dataset
   for(i in 1:T) {
     target += log_lik[i];
